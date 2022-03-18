@@ -1,45 +1,48 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <time.h>
 #include <omp.h>
 
 int main(int argc, char *argv[])
 {
-  int c;
-  char *filename = "./data/100.txt";
-  char bufor[1000];
-  int L = 0;
-  int v = 0;
-  int counter = 0;
-  int end = 1;
-  if (argc > 1)
-  {
-    filename = argv[1];
-  };
+  clock_t start, end;
+  start = clock();
 
-  fprintf(stderr, "File: %s\n", filename);
+  char filename[100];
+  char buffer[1000];
+  int rc, sum = 0;
+  if (argc > 1) sprintf(filename, "./data/%s.txt", argv[1]);
+  else {
+    fprintf(stderr, "Argument \"input_file_number\" is missing\n");
+    return EXIT_FAILURE;
+  }
+
   FILE *f = fopen(filename, "r");
-  if (f != NULL)
+  if (f == NULL)
   {
-    #pragma omp parallel num_threads(2) 
+    fprintf(stderr, "Cannot open file \"%s\"\n", filename);
+    return EXIT_FAILURE;
+  }
+  
+  #pragma omp parallel num_threads(2) 
     {
-      if (omp_get_thread_num() == 0) c = fscanf(f, "%s", bufor);
+      if (omp_get_thread_num() == 0) rc = fscanf(f, "%s", buffer);
       #pragma omp barrier
 
-      while (c > 0)
+      while (rc > 0)
       {
-        if (omp_get_thread_num() != 0) {
-          v = atoi(bufor);
-          L+=v;
-        }
+        if (omp_get_thread_num() != 0) sum += atoi(buffer);
         #pragma omp barrier
 
-        if (omp_get_thread_num() == 0) c = fscanf(f, "%s", bufor);
+        if (omp_get_thread_num() == 0) rc = fscanf(f, "%s", buffer);
       #pragma omp barrier
       }
       fclose(f);
     }
-  }
 
-  printf("{Sum: %d}\n", L);
+  end = clock();
+  double time_taken = (double)(end - start) / (double)CLOCKS_PER_SEC;
+  printf("sum: %d, t: %f\n", sum, time_taken);
   return EXIT_SUCCESS;
 }
