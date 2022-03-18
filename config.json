@@ -1,0 +1,11 @@
+{
+    "compileBeforeRunning": true,
+    "sequence": "sum-basic",
+    "parallel": "sum-omp-basic",
+    "input_files": [10e1, 10e2, 10e3, 10e4, 10e5, 10e6],
+    "samples": [200, 200, 200, 200, 100, 80],
+    "outliers": true,
+    "progressBarLen": 20,
+    "showIntermediateResults": false,
+    "showGraph": false
+}
