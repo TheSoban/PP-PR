@@ -10,7 +10,7 @@ int main(int argc, char *argv[])
 
   char filename[100];
   short buffer;
-  int thread_id, i, N = 10;
+  int thread_id, i, N;
   long sum = 0;
   FILE *f = NULL;
 
@@ -19,10 +19,7 @@ int main(int argc, char *argv[])
     fprintf(stderr, "Argument \"input_file_number\" is missing\n");
     return EXIT_FAILURE;
   }
-  if (argc > 2) N = atoi(argv[2]);
   int num = atoi(argv[1]);
-  N = (N > num)? num : N;
-  const int cycles = num / N;
 
   if (num <= 10000)
   {
@@ -41,6 +38,8 @@ int main(int argc, char *argv[])
     if (num <= 100000) N = 4;
     else if (num <= 1000000) N = 6;
     else N = 50;
+
+    const int cycles = num / N;
 
     #pragma omp parallel num_threads(N) reduction(+: sum) private(f, buffer, thread_id, i) shared(cycles)
     {
