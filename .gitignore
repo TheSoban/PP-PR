@@ -1,3 +1,4 @@
 *.out
 data
+data-bin
 .vscode
