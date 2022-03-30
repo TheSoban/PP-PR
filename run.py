@@ -61,8 +61,15 @@ def process_output(output_line):
 
 def run(mode, input_file, samples, thread_count=-1):
     output = []
-    program = config.data["sequence.program"] if mode == "s" else config.data["parallel.program"]
-    program_params = [str(input_file)] if mode == "s" or thread_count == -1 else [str(input_file), str(thread_count)]
+    if mode == "s":
+        program = config.data["sequence.program"]
+        program_params = [str(input_file)]
+    elif mode == "d":
+        program = config.data["dynamic.program"]
+        program_params = [str(input_file)]
+    else:
+        program = config.data["parallel.program"]
+        program_params = [str(input_file), str(thread_count)]
     progress_message(0, mode, input_file, thread_count)
     for i in range(samples):
         proc = Popen([f"./{program}.out", *program_params], stdout=PIPE, stderr=PIPE, encoding="UTF-8")
