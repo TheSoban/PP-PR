@@ -51,7 +51,7 @@ int main(int argc, char *argv[])
         #pragma omp cancel parallel
       }
       fseek(f, sizeof(buffer) * cycles * thread_id, SEEK_SET);
-      #pragma omp parallel for
+      #pragma omp for
       for (i = 0; i < cycles; i++)
       {
         if (fread(&buffer, sizeof(buffer), 1, f) <= 0)
