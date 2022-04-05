@@ -1,17 +1,18 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <omp.h>
-#include <unistd.h>
 
 int main(int argc, char *argv[])
 {
-  double start, end;
-  start = omp_get_wtime();
+  double start = omp_get_wtime();
 
   char filename[100];
   short buffer;
+
   int thread_id, i, N;
-  long sum = 0;
+
+  long long sum = 0;
+
   FILE *f = NULL;
 
   if (argc > 1) sprintf(filename, "./data-bin/%s.bin", argv[1]);
@@ -19,6 +20,7 @@ int main(int argc, char *argv[])
     fprintf(stderr, "Argument \"input_file_number\" is missing\n");
     return EXIT_FAILURE;
   }
+  
   int num = atoi(argv[1]);
 
   if (num <= 10000)
@@ -41,7 +43,7 @@ int main(int argc, char *argv[])
 
     const int cycles = num / N;
 
-    #pragma omp parallel num_threads(N) reduction(+: sum) private(f, buffer, thread_id, i) shared(cycles)
+    #pragma omp parallel num_threads(N) reduction(+: sum) private(f, buffer, thread_id, i)
     {
       thread_id = omp_get_thread_num();
       f = fopen(filename, "rb");
@@ -70,8 +72,11 @@ int main(int argc, char *argv[])
       fclose(f);
     }
   }
+  
+  double end = omp_get_wtime();
 
-  end = omp_get_wtime();
-  printf("sum: %ld, time: %g\n", sum, end - start);
+  double time_taken = end - start;
+
+  printf("sum: %lld, t: %f\n", sum, time_taken);
   return EXIT_SUCCESS;
 }
