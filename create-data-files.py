@@ -5,8 +5,8 @@ DATA_FILES_DIRECTORY = './data'
 MIN_NUMBER_VALUE = 1
 MAX_NUMBER_VALUE = 999
 
-# create files with sizes ranging from 100 to 10000000
-file_sizes_to_create = [10 ** exponent for exponent in range(1, 8)]
+# create files with sizes ranging from 10 to 100000000
+file_sizes_to_create = [10 ** exponent for exponent in range(1, 9)]
 
 # create data directory
 if not os.path.exists(DATA_FILES_DIRECTORY):
