@@ -1,60 +1,68 @@
 {
-    "compileBeforeRunning": true,
-    "sequence": {
-        "program": "sum-sequence",
-        "run": true,
-        "useOMP": false,
-        "runForEveryThreadCount": false,
-        "binary": false
-    },
-    "sequenceOMPOverhead": {
-        "program": "sum-sequence-omp-overhead",
-        "run": true,
-        "useOMP": true,
-        "runForEveryThreadCount": false,
-        "binary": false
-    },
-    "sequenceBinary": {
-        "program": "sum-sequence-binary",
-        "run": true,
-        "useOMP": false,
-        "runForEveryThreadCount": false,
-        "binary": true
-    },
-    "basicParallel": {
-        "program": "sum-basic-parallel",
-        "run": true,
-        "useOMP": true,
-        "runForEveryThreadCount": true,
-        "binary": false
-    },
-    "basicParallelBinary": {
-        "program": "sum-basic-parallel-binary",
-        "run": true,
-        "useOMP": true,
-        "runForEveryThreadCount": true,
-        "binary": true
-    },
-    "parallelBinary": {
-        "program": "sum-parallel-binary",
-        "run": true,
-        "useOMP": true,
-        "runForEveryThreadCount": true,
-        "binary": true
-    },
-    "dynamicBinary": {
-        "program": "sum-dynamic-binary",
-        "run": true,
-        "useOMP": true,
-        "runForEveryThreadCount": false,
-        "binary": true
-    },
-    "scripts": ["sequence", "sequenceOMPOverhead", "sequenceBinary", "basicParallel", "basicParallelBinary", "parallelBinary", "dynamicBinary"],
-    "parallelThreadCount": [2, 3, 4, 5, 6, 7, 8, 9, 10, 15, 20, 25, 50, 100],
-    "inputFiles": [10e1, 10e2, 10e3, 10e4, 10e5, 10e6],
-    "samples": [20, 20, 20, 20, 20, 20, 20],
-    "outliers": true,
-    "progressBarLen": 20,
-    "showIntermediateResults": false,
-    "showGraph": false
+  "compileBeforeRunning": true,
+  "sequence": {
+    "program": "sum-sequence",
+    "run": false,
+    "useOMP": false,
+    "runForEveryThreadCount": false,
+    "binary": false
+  },
+  "sequenceOMPOverhead": {
+    "program": "sum-sequence-omp-overhead",
+    "run": true,
+    "useOMP": true,
+    "runForEveryThreadCount": false,
+    "binary": false
+  },
+  "sequenceBinary": {
+    "program": "sum-sequence-binary",
+    "run": false,
+    "useOMP": false,
+    "runForEveryThreadCount": false,
+    "binary": true
+  },
+  "basicParallel": {
+    "program": "sum-basic-parallel",
+    "run": false,
+    "useOMP": true,
+    "runForEveryThreadCount": false,
+    "binary": false
+  },
+  "basicParallelBinary": {
+    "program": "sum-basic-parallel-binary",
+    "run": false,
+    "useOMP": true,
+    "runForEveryThreadCount": false,
+    "binary": true
+  },
+  "parallelBinary": {
+    "program": "sum-parallel-binary",
+    "run": false,
+    "useOMP": true,
+    "runForEveryThreadCount": true,
+    "binary": true
+  },
+  "dynamicBinary": {
+    "program": "sum-dynamic-binary",
+    "run": false,
+    "useOMP": true,
+    "runForEveryThreadCount": false,
+    "binary": true
+  },
+  "scripts": [
+    "sequence",
+    "sequenceOMPOverhead",
+    "sequenceBinary",
+    "basicParallel",
+    "basicParallelBinary",
+    "parallelBinary",
+    "dynamicBinary"
+  ],
+  "parallelThreadCount": [2, 5, 10, 20, 50, 100],
+  "inputFiles": [1e1, 1e2, 1e3, 1e4, 1e5, 1e6, 1e7, 1e8],
+  "samples": [20, 20, 20, 20, 20, 20, 20, 20],
+  "outliers": true,
+  "progressBarLen": 20,
+  "showIntermediateResults": false,
+  "showGraph": false
 }

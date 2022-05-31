@@ -44,7 +44,7 @@ def progress_message(percent, program, input_file, thread_count):
     empty = " " * (config.data["progressBarLen"] - len(full))
     thread_count = " " if thread_count == -1 else thread_count
     print(
-        f"\rRunning {program: >20} for (10e{round(log10(input_file))}:{thread_count: >3}) "
+        f"\rRunning {program: >20} for (10e{floor(log10(input_file))}:{thread_count: >3}) "
         f"[{Color.OKGREEN}{full}{empty}{Color.END}] {round(percent * 100): >4}%",
         end="",
     )
@@ -144,7 +144,7 @@ def main():
         for script in config.data["scripts"]:
             script_config = config.data[script]
             if script_config["run"]:
-                print(f"{results[script_config['program']]}:\n", json.dumps(json.loads(
+                print(f"{script_config['program']}:\n", json.dumps(json.loads(
                     str(results[script_config["program"]]).replace("'", '"')), indent=4))
 
 

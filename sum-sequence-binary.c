@@ -8,11 +8,13 @@ int main(int argc, char *argv[])
 
   char filename[100];
   short buffer;
-  
+
   long long sum = 0;
 
-  if (argc > 1) sprintf(filename, "./data-bin/%s.bin", argv[1]);
-  else {
+  if (argc > 1)
+    sprintf(filename, "./data-bin/%s.bin", argv[1]);
+  else
+  {
     fprintf(stderr, "Argument \"input_file_number\" is missing\n");
     return EXIT_FAILURE;
   }
@@ -26,7 +28,7 @@ int main(int argc, char *argv[])
 
   while (fread(&buffer, sizeof(buffer), 1, f) > 0)
     sum += buffer;
-    
+
   fclose(f);
 
   clock_t end = clock();

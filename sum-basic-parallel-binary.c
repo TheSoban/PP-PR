@@ -11,9 +11,11 @@ int main(int argc, char *argv[])
 
   int rc = 0;
   long long sum = 0;
-  
-  if (argc > 1) sprintf(filename, "./data/%s.txt", argv[1]);
-  else {
+
+  if (argc > 1)
+    sprintf(filename, "./data-bin/%s.bin", argv[1]);
+  else
+  {
     fprintf(stderr, "Argument \"input_file_number\" is missing\n");
     return EXIT_FAILURE;
   }
@@ -24,19 +26,22 @@ int main(int argc, char *argv[])
     fprintf(stderr, "Cannot open file \"%s\"\n", filename);
     return EXIT_FAILURE;
   }
-  
-  #pragma omp parallel num_threads(2) 
+
+#pragma omp parallel num_threads(2)
   {
-    if (omp_get_thread_num() == 0) rc = fread(&buffer, sizeof(buffer), 1, f);
-    #pragma omp barrier
+    if (omp_get_thread_num() == 0)
+      rc = fread(&buffer, sizeof(buffer), 1, f);
+#pragma omp barrier
 
     while (rc > 0)
     {
-      if (omp_get_thread_num() != 0) sum += buffer;
-      #pragma omp barrier
+      if (omp_get_thread_num() != 0)
+        sum += buffer;
+#pragma omp barrier
 
-      if (omp_get_thread_num() == 0) rc = fread(&buffer, sizeof(buffer), 1, f);
-      #pragma omp barrier
+      if (omp_get_thread_num() == 0)
+        rc = fread(&buffer, sizeof(buffer), 1, f);
+#pragma omp barrier
     }
   }
   fclose(f);

@@ -21,8 +21,21 @@ with open(f'{DATA_FILES_DIRECTORY}/solutions.txt', 'w') as s:
     for file_size in file_sizes_to_create:
         file_name = f'{file_size}.txt'
         with open(f'{DATA_FILES_DIRECTORY}/{file_name}', 'w') as f:
-            numbers = [randint(MIN_NUMBER_VALUE, MAX_NUMBER_VALUE)
-                       for _ in range(file_size)]
-            f.write('\n'.join(map(str, numbers)))
-            s.write(f'{file_name} - {sum(numbers)}\n')
-            print(f'{file_name} created')
+            if file_size <= 10 ** 6:
+                numbers = [randint(MIN_NUMBER_VALUE, MAX_NUMBER_VALUE)
+                        for _ in range(file_size)]
+                f.write('\n'.join(map(str, numbers)))
+                s.write(f'{file_name} - {sum(numbers)}\n')
+                print(f'{file_name} created')
+            else:
+                # sth wrong with sum
+
+                sm = 0
+                for _ in range(file_size // 10**6):
+                    numbers = [randint(MIN_NUMBER_VALUE, MAX_NUMBER_VALUE)
+                        for _ in range(10**6)]
+                    sm += sum(numbers)
+                    f.write('\n'.join(map(str, numbers)))
+
+                s.write(f'{file_name} - {sm}\n')
+                print(f'{file_name} created')
