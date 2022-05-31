@@ -8,7 +8,7 @@ class Config:
     def __init__(self):
         with open("config.json", "r") as file:
             self.data = json.load(file)
-            self.input_files = [int(tmp) for tmp in self.data["input_files"]]
+            self.input_files = [int(tmp) for tmp in self.data["inputFiles"]]
             self.samples = self.data["samples"]
 
 
@@ -27,9 +27,11 @@ class Color:
     UNDERLINE = "\033[4m"
 
 
-def compile(program):
+def compile(program, use_omp):
+    comm = ["gcc", "-fopenmp", f"{program}.c", "-o", f"{program}.out"] if use_omp else [
+        "gcc", f"{program}.c", "-o", f"{program}.out"]
     proc_comm = Popen(
-        ["gcc", "-fopenmp", f"{program}.c", "-o", f"{program}.out"], stdout=PIPE, stderr=PIPE, encoding="UTF-8"
+        comm, stdout=PIPE, stderr=PIPE, encoding="UTF-8"
     ).communicate()
     if proc_comm[1] != "":
         print(f"{Color.WARNING}{proc_comm[1]}{Color.END}")
@@ -37,11 +39,13 @@ def compile(program):
     return True
 
 
-def progress_message(percent, mode, input_file):
+def progress_message(percent, program, input_file, thread_count):
     full = "=" * floor(percent * config.data["progressBarLen"])
     empty = " " * (config.data["progressBarLen"] - len(full))
+    thread_count = " " if thread_count == -1 else thread_count
     print(
-        f"\rRunning for ({mode}:10e{round(log10(input_file))}) [{Color.OKGREEN}{full}{empty}{Color.END}] {round(percent * 100): >4}%",
+        f"\rRunning {program: >20} for (10e{floor(log10(input_file))}:{thread_count: >3}) "
+        f"[{Color.OKGREEN}{full}{empty}{Color.END}] {round(percent * 100): >4}%",
         end="",
     )
 
@@ -57,17 +61,20 @@ def process_output(output_line):
     return int(sm), float(t)
 
 
-def run(program, mode, input_file, samples):
+def run(script_config, input_file, samples, thread_count=-1):
     output = []
-    progress_message(0, mode, input_file)
+    program = script_config["program"]
+    program_params = [str(input_file), str(thread_count)]
+    progress_message(0, program, input_file, thread_count)
     for i in range(samples):
-        proc = Popen([f"./{program}.out", str(input_file)], stdout=PIPE, stderr=PIPE, encoding="UTF-8")
+        proc = Popen([f"./{program}.out", *program_params],
+                     stdout=PIPE, stderr=PIPE, encoding="UTF-8")
         check = check_if_no_errors(proc.communicate()[1], input_file)
         if check is not None:
             print(check)
             exit(-1)
         output.append(proc.communicate()[0])
-        progress_message((i + 1) / samples, mode, input_file)
+        progress_message((i + 1) / samples, program, input_file, thread_count)
     print()
     sums = set()
     times = []
@@ -77,17 +84,19 @@ def run(program, mode, input_file, samples):
         times.append(t)
 
     if len(sums) != 1:
-        print(f"{Color.FAIL}Sums don't much!{Color.END}")
+        print(f"{Color.FAIL}Sums don't much: {sums}!{Color.END}")
         exit(-1)
 
     comp_sum = sums.pop()
 
-    with open("./data/solutions.txt", "r") as file:
+    solutions = "./data-bin/solutions.txt" if script_config["binary"] else "./data/solutions.txt"
+    with open(solutions, "r") as file:
         for line in file.readlines():
             if str(input_file) == line.split(".")[0]:
                 if int(line.split("-")[-1]) != comp_sum:
                     sol_sum = int(line.split("-")[-1])
-                    print(f"{Color.FAIL}Computed sum ({comp_sum}) doesn't much the solution ({sol_sum})!{Color.END}")
+                    print(
+                        f"{Color.FAIL}Computed sum ({comp_sum}) doesn't much the solution ({sol_sum})!{Color.END}")
                     exit(-1)
 
     if config.data["outliers"]:
@@ -102,30 +111,41 @@ def run(program, mode, input_file, samples):
         avg_t = round(sum(times) / len(times), 6)
 
     if config.data["showIntermediateResults"]:
-        print(f"Results from {samples} samples for ({input_file}): avg={avg_t}")
+        print(
+            f"Results from {samples} samples for ({input_file}): avg={avg_t}")
     return avg_t
 
 
 def main():
+    results = {}
     try:
         if config.data["compileBeforeRunning"]:
-            if not compile(config.data["sequence"]):
-                return
-            if not compile(config.data["parallel"]):
-                return
+            for script in config.data["scripts"]:
+                script_config = config.data[script]
+                if script_config["run"] and not compile(script_config["program"], script_config["useOMP"]):
+                    return
+        for script in config.data["scripts"]:
+            script_config = config.data[script]
+            if script_config["run"]:
+                results[script_config["program"]] = {}
+                for input_file, samples in zip(config.input_files, config.samples):
+                    if not script_config["runForEveryThreadCount"]:
+                        results[script_config["program"]][f"{input_file}"] = run(
+                            script_config, input_file, samples)
+                    else:
+                        results[script_config["program"]][f"{input_file}"] = {}
+                        for thread_count in config.data["parallelThreadCount"]:
+                            results[script_config["program"]][f"{input_file}"][f"{thread_count}"] = run(
+                                script_config, input_file, samples, thread_count)
 
-        sequence = dict()
-        parallel = dict()
-        for input_file, samples in zip(config.input_files, config.samples):
-            sequence[f"{input_file}"] = run(config.data["sequence"], "s", input_file, samples)
-            parallel[f"{input_file}"] = run(config.data["parallel"], "p", input_file, samples)
-
-        print("Sequence:\n", json.dumps(json.loads(str(sequence).replace("'", '"')), indent=4))
-        print("Parallel:\n", json.dumps(json.loads(str(parallel).replace("'", '"')), indent=4))
     except KeyboardInterrupt:
         print("\nUser exited")
-        print("Sequence:\n", json.dumps(json.loads(str(sequence).replace("'", '"')), indent=4))
-        print("Parallel:\n", json.dumps(json.loads(str(parallel).replace("'", '"')), indent=4))
+    finally:
+        for script in config.data["scripts"]:
+            script_config = config.data[script]
+            if script_config["run"]:
+                print(f"{script_config['program']}:\n", json.dumps(json.loads(
+                    str(results[script_config["program"]]).replace("'", '"')), indent=4))
 
 
 if __name__ == "__main__":

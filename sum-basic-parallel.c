@@ -1,17 +1,17 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
-#include <time.h>
 #include <omp.h>
 
 int main(int argc, char *argv[])
 {
-  clock_t start, end;
-  start = clock();
+  double start = omp_get_wtime();
 
   char filename[100];
   char buffer[1000];
-  int rc, sum = 0;
+
+  int rc = 0;
+  long long sum = 0;
+  
   if (argc > 1) sprintf(filename, "./data/%s.txt", argv[1]);
   else {
     fprintf(stderr, "Argument \"input_file_number\" is missing\n");
@@ -26,23 +26,25 @@ int main(int argc, char *argv[])
   }
   
   #pragma omp parallel num_threads(2) 
+  {
+    if (omp_get_thread_num() == 0) rc = fscanf(f, "%s", buffer);
+    #pragma omp barrier
+
+    while (rc > 0)
     {
+      if (omp_get_thread_num() != 0) sum += atoi(buffer);
+      #pragma omp barrier
+
       if (omp_get_thread_num() == 0) rc = fscanf(f, "%s", buffer);
       #pragma omp barrier
-
-      while (rc > 0)
-      {
-        if (omp_get_thread_num() != 0) sum += atoi(buffer);
-        #pragma omp barrier
-
-        if (omp_get_thread_num() == 0) rc = fscanf(f, "%s", buffer);
-      #pragma omp barrier
-      }
-      fclose(f);
     }
+  }
+  fclose(f);
 
-  end = clock();
-  double time_taken = (double)(end - start) / (double)CLOCKS_PER_SEC;
-  printf("sum: %d, t: %f\n", sum, time_taken);
+  double end = omp_get_wtime();
+
+  double time_taken = end - start;
+
+  printf("sum: %lld, t: %f\n", sum, time_taken);
   return EXIT_SUCCESS;
 }
